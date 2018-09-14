@@ -1,0 +1,107 @@
+#include "../extensions/ProducerApp.hpp"
+#include "../extensions/ConsumerApp.hpp"
+#include "../extensions/consumer_strategies/UniformContentStrategy.hpp"
+#include "../extensions/consumer_strategies/SimpleLoggingStrategy.hpp"
+#include "../extensions/producer_strategies/SimpleAuthStrategy.hpp"
+#include "../extensions/producer_strategies/SimpleDataStrategy.hpp"
+#include "../extensions/producer_strategies/SimpleLoggingStrategy.hpp"
+
+#include "ns3/ndnSIM-module.h"
+#include "ns3/core-module.h"
+#include "ns3/object.h"
+#include "ns3/point-to-point-helper.h"
+#include "ns3/ndnSIM/apps/ndn-app.hpp"
+#include "ns3/ndnSIM/utils/ndn-rtt-estimator.hpp"
+#include "ns3/ndnSIM/ndn-cxx/data.hpp"
+
+namespace tactic {
+
+using namespace ::std;
+using namespace ::ndn;
+using namespace ::ns3;
+using namespace ::ns3::ndn;
+using namespace ::ndn::encoding;
+using namespace ::ndn::time;
+
+
+
+int
+main( int argc, char* argv[] ) {
+    // Parse command line
+    CommandLine cmd;
+    cmd.Parse( argc, argv );
+
+    // PointToPoint default parameters
+    Config::SetDefault("ns3::PointToPointNetDevice::DataRate", StringValue("1Mbps"));
+    Config::SetDefault("ns3::PointToPointChannel::Delay", StringValue("10ms"));
+    Config::SetDefault("ns3::QueueBase::MaxPackets", UintegerValue(10));
+    
+    // Make nodes
+    Ptr<Node> consumerNode = CreateObject<Node>();
+    Ptr<Node> producerNode = CreateObject<Node>();
+
+    // Links
+    PointToPointHelper p2pHelper;
+    p2pHelper.Install( consumerNode, producerNode );
+    
+    // Install NDN
+    ns3::ndn::StackHelper ndnHelper;
+    ndnHelper.SetDefaultRoutes( true );
+    ndnHelper.InstallAll();
+
+    // Routing
+    GlobalRoutingHelper routeHelper;
+    routeHelper.InstallAll();
+    
+    // Consumer app
+    auto cContentStrategy = CreateObject<consumer_strategies::UniformContentStrategy>();
+    cContentStrategy->AddContent( "/producers/dummy", "/content1" );
+    cContentStrategy->AddContent( "/producers/dummy", "/content2" );
+    cContentStrategy->AddContent( "/producers/dummy", "/content3" );
+    
+    auto cLoggingStrategy = CreateObject<consumer_strategies::SimpleLoggingStrategy>();
+    
+    AppHelper consumerApp( "tactic::ConsumerApp" );
+    consumerApp.SetAttribute( "Name", NameValue( "consumers/dummy" ) );
+    consumerApp.SetAttribute( "ContentStrategy", PointerValue( cContentStrategy ) );
+    consumerApp.SetAttribute( "LoggingStrategy", PointerValue( cLoggingStrategy ) );
+    consumerApp.Install( consumerNode );
+    
+    // Producer app
+    auto pAuthStrategy = CreateObject<producer_strategies::SimpleAuthStrategy>();
+    pAuthStrategy->AddGroup( "consumers/dummy", AuthGroup( 3 ) );
+    pAuthStrategy->SetTagLifetime( ::ndn::time::milliseconds( 3000 ) );
+    
+    auto pDataStrategy = CreateObject<producer_strategies::SimpleDataStrategy>();
+    pDataStrategy->SetPrefix( "producers/dummy" );
+    pDataStrategy->SetSegSize( 4096 );
+    pDataStrategy->AddContent( "content1", AuthGroup( 1 ), 100 );
+    pDataStrategy->AddContent( "content2", AuthGroup( 2 ), 200 );
+    pDataStrategy->AddContent( "content3", AuthGroup( 3 ), 300 );
+    
+    auto pLoggingStrategy = CreateObject<producer_strategies::SimpleLoggingStrategy>();
+    
+    AppHelper producerApp( "tactic::ProducerApp" );
+    producerApp.SetAttribute( "Name", NameValue( "producers/dummy" ) );
+    producerApp.SetAttribute( "AuthStrategy", PointerValue( pAuthStrategy ) );
+    producerApp.SetAttribute( "DataStrategy", PointerValue( pDataStrategy ) );
+    producerApp.SetAttribute( "LoggingStrategy", PointerValue( pLoggingStrategy ) );
+    producerApp.Install( producerNode );
+    
+    
+    // Routing
+    routeHelper.AddOrigins( "producers/dummy", producerNode );
+    GlobalRoutingHelper::CalculateRoutes();
+    
+    // Run
+    Simulator::Stop( Seconds( 30 ) );
+    Simulator::Run();
+    return 0;
+}
+
+};
+
+int
+main( int argc, char* argv[] ) {
+    tactic::main( argc, argv );
+}
