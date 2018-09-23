@@ -6,15 +6,19 @@ DataResponse::DataResponse(
     ndn::Name const& producerName,
     ndn::Name const& contentName,
     size_t           contentSize,
-    uint             lastSeg
+    AuthGroup const& authGroup,
+    uint             lastSeg,
+    bool             wasDenied
 )
     : Response(
         ndn::Name( producerName )
         .append( KEYWORD_DATA )
         .append( contentName )
       )
-    , m_size( contentSize )
+    , m_contentSize( contentSize )
+    , m_authGroup( authGroup )
     , m_lastSeg( lastSeg )
+    , m_wasDenied( wasDenied )
 {}
 
 Response::Type
@@ -24,7 +28,12 @@ DataResponse::GetType( void ) const {
 
 size_t
 DataResponse::GetSize( void ) const {
-    return m_size;
+    return m_contentSize;
+}
+
+AuthGroup const&
+DataResponse::GetAuthGroup( void ) const {
+    return m_authGroup;
 }
 
 uint
@@ -35,9 +44,20 @@ DataResponse::GetLastSeg( void ) const {
 
 SPtr< ndn::Data >
 DataResponse::ToData( ndn::EncodingBuffer& contentBuf ) const {
-    // Prepend random block of data of size m_size.
-    uint8_t content[m_size];
-    contentBuf.prependByteArray( content, m_size );
+    // Prepend random block of data of size m_contentSize.
+    uint8_t content[m_contentSize];
+    contentBuf.prependByteArrayBlock( TLV_DATA, content, m_contentSize );
+    
+    // Flag to indicate if the request was valid or not.
+    ndn::encoding::prependNonNegativeIntegerBlock(
+        contentBuf,
+        TLV_WAS_DENIED,
+        m_wasDenied
+    );
+    
+    // The group this response belongs to, used by the routers
+    // to validate an AuthTag's coverage of the content.
+    contentBuf.prependBlock( m_authGroup.Encode() );
     
     auto data = Response::ToData( contentBuf );
     data->setFinalBlockId( ndn::Name::Component::fromSegment( m_lastSeg ) );
@@ -47,7 +67,12 @@ DataResponse::ToData( ndn::EncodingBuffer& contentBuf ) const {
 void
 DataResponse::FromData( ndn::Data const& data ) {
     ndn::Block const& content = data.getContent();
-    m_size    = content.value_size();
+    m_contentSize = content.value_size();
+    m_authGroup.Decode( content.get( TLV_AUTH_GROUP ) );
+    m_wasDenied =
+        ndn::encoding::readNonNegativeInteger(
+            content.get( TLV_WAS_DENIED )
+        );
     m_lastSeg = data.getFinalBlockId().toSegment();
     Response::FromData( data );
 }

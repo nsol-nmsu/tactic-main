@@ -2,6 +2,7 @@
 #define _DataRequest_
 #include "Request.hpp"
 #include "AuthTag.hpp"
+#include "AuthGroup.hpp"
 
 namespace tactic {
 

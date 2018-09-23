@@ -15,7 +15,7 @@ class Interface {
         typedef Closure< void( SPtr< Response > ) > ResponseCb;
         
         virtual void
-        Submit( SPtr<Request> req, ResponseCb res ) = 0;
+        Submit( SPtr< Request > req, ResponseCb res ) = 0;
 };
 
 }

@@ -140,6 +140,14 @@ Consumer::Start( SPtr< Interface >& iface ) {
 }
 
 void
+Consumer::Stop( void ) {
+    // Set m_nextSeg >= m_lastSeg to halt the consumer
+    // after the current pending requests timeout or
+    // or finish.
+    m_nextSeg = UINT_MAX;
+}
+
+void
 Consumer::FillWindow( void ) {
     // Already finished?
     if( m_nextSeg > m_lastSeg ) {
