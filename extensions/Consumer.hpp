@@ -41,7 +41,7 @@ class Consumer : public ns3::ObjectBase {
         );
         
         void
-        Start( SPtr<Interface>& iface );
+        Start( SPtr<Interface> iface );
         
         void
         Stop( void );

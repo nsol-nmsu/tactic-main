@@ -87,7 +87,7 @@ Producer::Get( Request const& request ) const {
     // request on failure since there may be valid
     // requests in the downstream PITs, instead we just
     // set the wasDenied flag if the request is invalid.
-    auto& dreq = std::dynamic_cast<DataRequest const&>( request );
+    auto& dreq = dynamic_cast<DataRequest const&>( request );
     bool wasDenied = false;
     if( !dreq.GetAuthTag().IsActive() )
         wasDenied = true;

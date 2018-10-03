@@ -122,7 +122,7 @@ Consumer::Consumer(
 }
 
 void
-Consumer::Start( SPtr< Interface >& iface ) {
+Consumer::Start( SPtr< Interface > iface ) {
     m_iface      = iface;
     m_nextSeg    = 0;
     m_lastSeg    = UINT_MAX - 1;

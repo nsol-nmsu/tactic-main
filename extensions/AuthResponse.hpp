@@ -14,6 +14,8 @@ class AuthResponse : public Response {
             AuthTag const& auth
         );
         
+        AuthResponse( ndn::Data const& data );
+        
         AuthTag const&
         GetAuthTag( void ) const;
         

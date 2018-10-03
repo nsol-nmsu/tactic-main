@@ -15,6 +15,12 @@ AuthResponse::AuthResponse(
     , m_auth( auth )
 {}
 
+AuthResponse::AuthResponse( ndn::Data const& data )
+    : Response( "" )
+{
+    FromData( data );
+}
+
 Response::Type
 AuthResponse::GetType( void ) const {
     return Response::TYPE_AUTH;

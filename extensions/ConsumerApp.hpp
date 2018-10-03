@@ -17,7 +17,7 @@
 
 namespace tactic {
 
-class ConsumerApp : public ns3::ndn::App {
+class ConsumerApp : public ns3::Application {
     public:
     
         static ns3::TypeId
@@ -42,7 +42,8 @@ class ConsumerApp : public ns3::ndn::App {
     private:
     
         ndn::Name                  m_consumerName;
-        Consumer                   m_consumer;
+        SPtr< Interface >          m_iface;
+        UPtr< Consumer >           m_consumer;
         ns3::Ptr< ContentChooser > m_contentChooser;
         ns3::EventId               m_nextEvent;
         ns3::TracedValue< uint >   m_numContentsReceived;

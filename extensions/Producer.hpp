@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <stdexcept>
+#include <memory>
 
 namespace tactic {
 
