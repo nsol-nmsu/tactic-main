@@ -41,6 +41,12 @@ Request::GetSignature( void ) const {
 }
 
 SPtr< ndn::Interest >
+Request::ToInterest( void ) const {
+    ndn::EncodingBuffer contentBuf;
+    return ToInterest( contentBuf );
+}
+
+SPtr< ndn::Interest >
 Request::ToInterest( ndn::EncodingBuffer& contentBuf ) const {
     size_t size = contentBuf.size();
     

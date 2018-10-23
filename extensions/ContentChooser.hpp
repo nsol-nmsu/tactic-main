@@ -12,7 +12,7 @@ class ContentChooser : public ns3::Object {
         virtual ndn::Name
         NextName( void ) = 0;
         
-        virtual ndn::Time
+        virtual ns3::Time
         NextDelay( void ) = 0;
 };
 

@@ -16,21 +16,21 @@ ConsumerApp::GetTypeId( void ) {
             "which is a generic type for controlling the order and "
             "names of requested contents.",
             ns3::PointerValue( nullptr ),
-            ns3::MakePointerAccessor( ns3::m_contentChooser ),
+            ns3::MakePointerAccessor( &ConsumerApp::m_contentChooser ),
             ns3::MakePointerChecker< ConsumerApp >()
         )
         .AddAttribute(
             "ConsumerName",
             "Name of the consumer, used for authentication and such",
             ns3::ndn::NameValue( "/" ),
-            ns3::ndn::MakeNameAccessor( ns3::consumerName ),
+            ns3::ndn::MakeNameAccessor( &ConsumerApp::m_consumerName ),
             ns3::ndn::MakeNameChecker()
         )
         .AddTraceSource(
             "NumContentsReceived",
             "Number of full contents received by the app",
             ns3::MakeTraceSourceAccessor(
-                &Consumer::m_numContentsReceived
+                &ConsumerApp::m_numContentsReceived
             ),
             "ns3::TracedValueCallback::UInt"
         )
@@ -38,7 +38,7 @@ ConsumerApp::GetTypeId( void ) {
             "NumContentsFailed",
             "Number of contents that couldn't be retrieved",
             ns3::MakeTraceSourceAccessor(
-                &Consumer::m_numContentsFailed
+                &ConsumerApp::m_numContentsFailed
             ),
             "ns3::TracedValueCallback::UInt"
         );
@@ -72,18 +72,14 @@ ConsumerApp::ScheduleNext( void ) {
 
 class NfdInterface : public Interface {
     public:
-        NfdInterface( ndf::face::Face& face );
+        NfdInterface( void );
         
         void
         Submit( SPtr< Request > req, ResponseCb rCb ) override;
         
     private:
         ndn::Face m_face;
-}
-
-NfdInterface::NfdInterface( nfd::face::Face& face )
-    : m_face( face.getTransport() )
-{}
+};
 
 void
 NfdInterface::Submit( SPtr< Request > req, ResponseCb res ) {
@@ -92,15 +88,15 @@ NfdInterface::Submit( SPtr< Request > req, ResponseCb res ) {
     auto onData =
         [&]( Interest const& interest, Data const& data ) {
             auto response = make_shared< DataResponse >( data );
-            res( std::dynamic_pointer_cast< Response >( response ) );
+            res(response );
         };
     auto onNack =
-        [-]( Interest const& interest, ip::Nack const& nack ) {};
+        [&]( Interest const& interest, ndn::lp::Nack const& nack ) {};
     auto onTimeout =
-        [-]( Interest const& interest ){};
+        [&]( Interest const& interest ){};
     
     m_face.expressInterest(
-        req->ToInterest(),
+        *req->ToInterest(),
         onData,
         onNack,
         onTimeout
@@ -109,24 +105,24 @@ NfdInterface::Submit( SPtr< Request > req, ResponseCb res ) {
 
 void
 ConsumerApp::ConsumeNext( void ) {
-    m_consumer = Consumer( m_consumerName, m_contentChooser->NextName() );
+    m_consumer = UPtr<Consumer>( new Consumer( m_consumerName, m_contentChooser->NextName() ) );
     
     auto onFinish =
         [this]( void ) {
             ScheduleNext();
             m_numContentsReceived++;
         };
-    m_consumer.DoOnFinish( onFinish );
+    m_consumer->DoOnFinish( onFinish );
     
     auto onFail =
         [this]( void ) {
             ScheduleNext();
             m_numContentsFailed++;
         };
-    m_consumer.DoOnFail( onFail );
+    m_consumer->DoOnFail( onFail );
     
-    auto iface = std::make_shared<NfdInterface)( *m_face );
-    m_consumer.Start( std::dynamic_pointer_cast< Interface >( iface ) );
+    auto iface = std::make_shared<NfdInterface>();
+    m_consumer->Start( iface );
 }
 
 }

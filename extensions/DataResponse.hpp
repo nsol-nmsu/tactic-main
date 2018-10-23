@@ -17,6 +17,8 @@ class DataResponse : public Response {
             bool             wasDenied
         );
         
+        DataResponse( ndn::Data const& data );
+        
         Response::Type
         GetType( void ) const;
         

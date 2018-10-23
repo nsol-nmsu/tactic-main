@@ -18,6 +18,12 @@ Response::GetSignature( void ) const {
 }
 
 SPtr< ndn::Data >
+Response::ToData( void ) const {
+    ndn::EncodingBuffer contentBuf;
+    return ToData( contentBuf );
+}
+
+SPtr< ndn::Data >
 Response::ToData( ndn::EncodingBuffer& contentBuf ) const {
     auto data = make_shared< ndn::Data >( m_name );
     

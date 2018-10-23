@@ -21,6 +21,10 @@ DataResponse::DataResponse(
     , m_wasDenied( wasDenied )
 {}
 
+DataResponse::DataResponse( ndn::Data const& data ) {
+    FromData( data );
+}
+
 Response::Type
 DataResponse::GetType( void ) const {
     return Response::TYPE_DATA;

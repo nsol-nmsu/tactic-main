@@ -28,6 +28,8 @@ class Request {
             TYPE_AUTH
         };
         
+        Request( void ){};
+        
         Request( ndn::Name const& name );
         
         Request( ndn::Interest const& interest );
@@ -46,6 +48,9 @@ class Request {
         
         virtual Type
         GetType( void ) const = 0;
+        
+        SPtr< ndn::Interest >
+        ToInterest( void ) const;
         
         virtual SPtr< ndn::Interest >
         ToInterest( ndn::EncodingBuffer& contentBuf ) const;
