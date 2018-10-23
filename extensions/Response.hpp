@@ -28,6 +28,8 @@ class Response {
             TYPE_AUTH
         };
         
+        Response( void ) {};
+        
         Response( ndn::Name const& name );
         
         ndn::Name const&
@@ -38,6 +40,9 @@ class Response {
         
         virtual Type
         GetType( void ) const = 0;
+        
+        SPtr< ndn::Data >
+        ToData( void ) const;
         
         virtual SPtr< ndn::Data >
         ToData( ndn::EncodingBuffer& contentBuf ) const;

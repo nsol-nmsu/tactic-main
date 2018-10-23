@@ -103,6 +103,7 @@ ConsumerApp::ScheduleNext( void ) {
         );
 }
 
+<<<<<<< HEAD
 void
 ConsumerApp::ConsumeNext( void ) {
     m_consumer =
@@ -112,6 +113,44 @@ ConsumerApp::ConsumeNext( void ) {
                 m_contentChooser->NextName()
             )
         );
+=======
+class NfdInterface : public Interface {
+    public:
+        NfdInterface( void );
+        
+        void
+        Submit( SPtr< Request > req, ResponseCb rCb ) override;
+        
+    private:
+        ndn::Face m_face;
+};
+
+void
+NfdInterface::Submit( SPtr< Request > req, ResponseCb res ) {
+    using namespace ::ndn;
+    
+    auto onData =
+        [&]( Interest const& interest, Data const& data ) {
+            auto response = make_shared< DataResponse >( data );
+            res(response );
+        };
+    auto onNack =
+        [&]( Interest const& interest, ndn::lp::Nack const& nack ) {};
+    auto onTimeout =
+        [&]( Interest const& interest ){};
+    
+    m_face.expressInterest(
+        *req->ToInterest(),
+        onData,
+        onNack,
+        onTimeout
+    );
+}
+
+void
+ConsumerApp::ConsumeNext( void ) {
+    m_consumer = UPtr<Consumer>( new Consumer( m_consumerName, m_contentChooser->NextName() ) );
+>>>>>>> Temp
     
     auto onFinish =
         [this]( void ) {
@@ -127,7 +166,11 @@ ConsumerApp::ConsumeNext( void ) {
         };
     m_consumer->DoOnFail( onFail );
     
+<<<<<<< HEAD
     auto iface = std::make_shared< ConInterface >();
+=======
+    auto iface = std::make_shared<NfdInterface>();
+>>>>>>> Temp
     m_consumer->Start( iface );
 }
 
