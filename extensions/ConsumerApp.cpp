@@ -89,7 +89,6 @@ ConsumerApp::StartApplication( void ) {
 
 void
 ConsumerApp::StopApplication( void ) {
-    m_iface = std::make_shared< ConInterface >();
     m_nextEvent.Cancel();
 }
 
@@ -103,17 +102,6 @@ ConsumerApp::ScheduleNext( void ) {
         );
 }
 
-<<<<<<< HEAD
-void
-ConsumerApp::ConsumeNext( void ) {
-    m_consumer =
-        UPtr< Consumer >(
-            new Consumer(
-                m_consumerName,
-                m_contentChooser->NextName()
-            )
-        );
-=======
 class NfdInterface : public Interface {
     public:
         NfdInterface( void );
@@ -150,8 +138,7 @@ NfdInterface::Submit( SPtr< Request > req, ResponseCb res ) {
 void
 ConsumerApp::ConsumeNext( void ) {
     m_consumer = UPtr<Consumer>( new Consumer( m_consumerName, m_contentChooser->NextName() ) );
->>>>>>> Temp
-    
+
     auto onFinish =
         [this]( void ) {
             ScheduleNext();
@@ -165,12 +152,8 @@ ConsumerApp::ConsumeNext( void ) {
             m_numContentsFailed++;
         };
     m_consumer->DoOnFail( onFail );
-    
-<<<<<<< HEAD
-    auto iface = std::make_shared< ConInterface >();
-=======
+
     auto iface = std::make_shared<NfdInterface>();
->>>>>>> Temp
     m_consumer->Start( iface );
 }
 

@@ -21,13 +21,7 @@ DataResponse::DataResponse(
     , m_wasDenied( wasDenied )
 {}
 
-<<<<<<< HEAD
-DataResponse::DataResponse( ndn::Data const& data )
-    : Response( "" )
-{
-=======
 DataResponse::DataResponse( ndn::Data const& data ) {
->>>>>>> Temp
     FromData( data );
 }
 

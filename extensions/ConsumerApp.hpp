@@ -42,12 +42,7 @@ class ConsumerApp : public ns3::Application {
     private:
     
         ndn::Name                  m_consumerName;
-<<<<<<< HEAD
-        SPtr< Interface >          m_iface;
-        UPtr< Consumer >           m_consumer;
-=======
         UPtr<Consumer>             m_consumer;
->>>>>>> Temp
         ns3::Ptr< ContentChooser > m_contentChooser;
         ns3::EventId               m_nextEvent;
         ns3::TracedValue< uint >   m_numContentsReceived;
